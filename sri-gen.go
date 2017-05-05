@@ -5,7 +5,6 @@ import (
   "os"
   "io/ioutil"
   "flag"
-  "sync"
   "crypto/sha256"
   "crypto/sha512"
 )
@@ -17,7 +16,6 @@ type sri struct {
 }
 
 func main() {
-  var wg sync.WaitGroup
 
   filePaths := os.Args[2:]
   hashType := flag.Int("hash", 256, "Hashing algorithm to use (256/384/512)");
@@ -27,9 +25,7 @@ func main() {
   hashFunction := hashChooser(hashType);
 
   for _, filePath := range filePaths {
-    wg.Add(1)
     go func(filePath string) {
-      defer wg.Done()
       hash := generateHash(filePath, hashFunction)
       resultData := sri{
         fileName: filePath,
@@ -42,8 +38,6 @@ func main() {
   for i := 0; i < len(filePaths); i++ {
     fmt.Println(<-results)
   }
-
-  wg.Wait()
 }
 
 func generateHash(path string, hashFunction func(data string) []uint8) []uint8 {
