@@ -15,18 +15,24 @@ func main() {
   flag.Parse()
 
   fileContents := readFile(filePath)
-  var hash []uint8
+  hashFunction := hashChooser(hashType);
 
-  switch *hashType {
-  case 256:
-    hash = create256Hash(fileContents)
-  case 384:
-    hash = create384Hash(fileContents)
-  case 512:
-    hash = create512Hash(fileContents)
-  }
+  hash := hashFunction(fileContents)
 
   fmt.Printf("%x", hash)
+}
+
+func hashChooser(hashType *int) func(data string) []uint8 {
+  switch *hashType {
+  case 256:
+    return create256Hash
+  case 384:
+    return create384Hash
+  case 512:
+    return create512Hash
+  }
+
+  return create256Hash
 }
 
 func readFile(path string) string {
