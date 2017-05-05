@@ -7,12 +7,13 @@ import (
   "flag"
   "crypto/sha256"
   "crypto/sha512"
+  "encoding/hex"
 )
 
 type sri struct {
   fileName  string
   hashType  int
-  hash      []uint8
+  hash      string
 }
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
       hash := generateHash(filePath, hashFunction)
       resultData := sri{
         fileName: filePath,
-        hash: hash,
+        hash: hex.EncodeToString(hash),
         hashType: *hashType }
       results <- resultData
     } (filePath)
