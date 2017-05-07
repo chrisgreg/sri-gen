@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 )
 
 type sri struct {
@@ -23,6 +24,7 @@ func main() {
 	flag.Parse()
 
 	results := make(chan sri, len(filePaths))
+	var sriResults = make([]sri, len(filePaths))
 	hashFunction := hashChooser(hashType)
 
 	for _, filePath := range filePaths {
@@ -37,8 +39,25 @@ func main() {
 	}
 
 	for i := 0; i < len(filePaths); i++ {
-		fmt.Println(<-results)
+		sriResults[i] = <-results
 	}
+
+	writeToFile(sriResults)
+}
+
+func writeToFile(data []sri) {
+	file, err := os.Create("result.txt")
+	check(err)
+	defer file.Close()
+	fmt.Fprintf(file, "File\tHash\n\n")
+
+	for _, result := range data {
+		sriHash := "sha" + strconv.Itoa(result.hashType) + "-" + result.hash
+		line := fmt.Sprintf("%s\t%s\n", result.fileName, sriHash)
+		fmt.Fprintf(file, line)
+	}
+
+	fmt.Println("Finished creating file")
 }
 
 func generateHash(path string, hashFunction func(data string) []uint8) []uint8 {
